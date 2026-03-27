@@ -1,0 +1,3707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bob — Project Workflow Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CSS Custom Properties ─────────────────────────────────────────────── */
+    :root {
+      --color-bg:           #F7F6F3;
+      --color-surface:      #FFFFFF;
+      --color-border:       #E2E0DA;
+      --color-text:         #1A1916;
+      --color-text-muted:   #9E9B93;
+      --color-accent:       #F0C70E;
+      --color-accent-fg:    #1A1916;
+      --color-warn-bg:      #FFFAE8;
+      --color-warn-border:  #E8B800;
+      --color-sidebar-bg:   #F0EEE9;
+      --sidebar-width:      240px;
+      --content-max:        680px;
+      --radius:             4px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-bg:           #141310;
+        --color-surface:      #1E1C19;
+        --color-border:       #2E2C28;
+        --color-text:         #EDE9E1;
+        --color-text-muted:   #9E9A90;
+        --color-accent:       #F0C70E;
+        --color-accent-fg:    #141310;
+        --color-warn-bg:      #1F1B00;
+        --color-warn-border:  #8A7000;
+        --color-sidebar-bg:   #181614;
+      }
+    }
+
+    /* ─── Reset & Base ───────────────────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--color-text);
+      background-color: var(--color-bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    input, textarea, select {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      background: transparent;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ─── Load Animation ────────────────────────────────────────────────────── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .app {
+      animation: fadeIn 250ms ease-out;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .app.no-animation {
+      animation: none;
+      opacity: 1;
+    }
+
+    /* ─── Layout ────────────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background-color: var(--color-sidebar-bg);
+      border-right: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 56px 48px;
+    }
+
+    /* ─── Sidebar: Home State ────────────────────────────────────────────────── */
+    .sidebar-home {
+      padding: 32px 24px;
+    }
+
+    .sidebar-logo {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--color-text);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-tagline {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    /* ─── Sidebar: Project State ─────────────────────────────────────────────── */
+    .sidebar-project {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .sidebar-project-header {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .sidebar-back {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: color 0.15s ease;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+    }
+
+    .sidebar-back:hover {
+      color: var(--color-text);
+    }
+
+    .sidebar-project-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .sidebar-project-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sidebar-settings-btn {
+      color: var(--color-text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 3px 4px;
+      line-height: 0;
+      border-radius: var(--radius);
+      flex-shrink: 0;
+      transition: color 0.12s ease, background-color 0.12s ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar-settings-btn:hover {
+      color: var(--color-text);
+      background-color: var(--color-border);
+    }
+
+    .sidebar-settings-btn.active {
+      color: var(--color-accent-fg);
+      background-color: var(--color-accent);
+    }
+
+    .sidebar-project-type {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── Project Settings Panel ─────────────────────────────────────────────── */
+    .settings-header {
+      margin-bottom: 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .settings-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--color-text);
+    }
+
+    .settings-section {
+      margin-bottom: 40px;
+    }
+
+    .settings-field {
+      margin-bottom: 24px;
+    }
+
+    .settings-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .settings-input {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-surface);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s ease;
+    }
+
+    .settings-input:focus {
+      border-color: var(--color-accent);
+    }
+
+    .settings-select {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-surface);
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s ease;
+    }
+
+    .settings-select:focus {
+      border-color: var(--color-accent);
+    }
+
+    .settings-textarea {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-surface);
+      outline: none;
+      resize: vertical;
+      line-height: 1.6;
+      font-family: inherit;
+      transition: border-color 0.15s ease;
+    }
+
+    .settings-textarea::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    .settings-textarea:focus {
+      border-color: var(--color-accent);
+    }
+
+    .settings-status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .settings-status-label {
+      font-size: 14px;
+      color: var(--color-text);
+    }
+
+    .settings-status-value {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .btn-status {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 6px 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.12s ease, border-color 0.12s ease;
+    }
+
+    .btn-status:hover {
+      color: var(--color-text);
+      border-color: var(--color-text-muted);
+    }
+
+    .settings-danger-zone {
+      margin-top: 48px;
+      padding-top: 28px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .settings-danger-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .btn-danger {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      background: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .btn-danger:hover {
+      color: #c0392b;
+      border-color: #c0392b;
+    }
+
+    /* ─── Phase Stepper ─────────────────────────────────────────────────────── */
+    .phase-stepper {
+      padding: 16px 0;
+      flex: 1;
+    }
+
+    .phase-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 9px 24px;
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.12s ease;
+      border-left: 2px solid transparent;
+    }
+
+    .phase-step:hover {
+      background-color: var(--color-border);
+    }
+
+    .phase-step.active {
+      border-left-color: var(--color-accent);
+      background-color: rgba(240, 199, 14, 0.06);
+    }
+
+    .phase-step.completed {
+      opacity: 0.65;
+    }
+
+    .phase-step.future {
+      opacity: 0.4;
+    }
+
+    .phase-step-indicator {
+      font-size: 11px;
+      color: var(--color-text-muted);
+      font-weight: 500;
+      padding-top: 1px;
+      min-width: 18px;
+      text-align: right;
+    }
+
+    .phase-step.completed .phase-step-indicator::after {
+      content: '✓';
+      color: var(--color-text-muted);
+    }
+
+    .phase-step-label {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--color-text);
+      line-height: 1.4;
+    }
+
+    .phase-step.active .phase-step-label {
+      font-weight: 600;
+    }
+
+    .phase-step.completed .phase-step-label {
+      color: var(--color-text-muted);
+    }
+
+    /* ─── Home Layout ───────────────────────────────────────────────────────── */
+    .app--home .sidebar {
+      display: none;
+    }
+
+    .app--home {
+      background: #111110;
+    }
+
+    .app--home .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 56px 80px;
+      background: #111110;
+    }
+
+    /* ─── Home Hub ───────────────────────────────────────────────────────────── */
+    #view-home {
+      --hub-text:        #e8e4dc;
+      --hub-muted:       #666660;
+      --hub-muted-light: #999990;
+      --hub-accent:      #e8c84a;
+      --hub-accent-bg:   rgba(232, 200, 74, 0.06);
+      --hub-border-card: #2a2a28;
+      --hub-border-row:  #1e1e1c;
+      --hub-pip-done:    #3a3830;
+      --hub-pip-future:  #222220;
+      --hub-stale:       #e8923a;
+      color: var(--hub-text);
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+
+    /* Topbar */
+    .hub-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 52px;
+    }
+
+    .hub-topbar-wordmark {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      color: var(--hub-muted);
+      text-transform: uppercase;
+    }
+
+    .hub-topbar-date {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--hub-muted);
+    }
+
+    /* Eyebrow */
+    .hub-eyebrow {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      color: var(--hub-muted);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* Hero card */
+    .hub-hero-card {
+      position: relative;
+      border: 1px solid var(--hub-border-card);
+      border-radius: 6px;
+      padding: 28px 32px 28px 44px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+      overflow: hidden;
+    }
+
+    .hub-hero-card:hover {
+      background-color: rgba(255,255,255,0.015);
+    }
+
+    .hub-hero-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--hub-accent);
+      border-radius: 6px 0 0 6px;
+    }
+
+    .hub-hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .hub-hero-name {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 48px;
+      font-weight: 600;
+      line-height: 1.05;
+      color: var(--hub-text);
+    }
+
+    .hub-type-badge {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--hub-accent);
+      border: 1px solid var(--hub-accent);
+      padding: 3px 9px;
+      border-radius: 3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 8px;
+    }
+
+    .hub-hero-phase {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--hub-muted-light);
+      margin-bottom: 20px;
+    }
+
+    .hub-hero-phase-accent {
+      color: var(--hub-accent);
+      font-weight: 500;
+    }
+
+    /* Next action box */
+    .hub-next-action {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      border: 1px solid var(--hub-border-card);
+      border-left: 2px solid var(--hub-accent);
+      background: var(--hub-accent-bg);
+      border-radius: 4px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+    }
+
+    .hub-next-action-label {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: var(--hub-accent);
+      text-transform: uppercase;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    .hub-next-action-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hub-next-action-text {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--hub-text);
+      line-height: 1.5;
+    }
+
+    /* Hero footer */
+    .hub-hero-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .hub-footer-meta {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--hub-muted);
+      white-space: nowrap;
+    }
+
+    /* Pipeline (phase progress bar) */
+    .hub-pipeline {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hub-pip {
+      height: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .hub-pip.pip-hero  { width: 28px; }
+    .hub-pip.pip-table { width: 18px; }
+    .hub-pip.pip-done    { background: var(--hub-pip-done); }
+    .hub-pip.pip-active  { background: var(--hub-accent); }
+    .hub-pip.pip-future  { background: var(--hub-pip-future); }
+
+    /* Stack section */
+    .hub-stack-wrap {
+      margin-top: 56px;
+    }
+
+    .hub-stack-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--hub-border-card);
+      margin-bottom: 0;
+    }
+
+    .hub-stack-title {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      color: var(--hub-muted);
+      text-transform: uppercase;
+    }
+
+    .hub-stack-count {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--hub-muted);
+    }
+
+    .hub-table-headers {
+      display: grid;
+      grid-template-columns: 1fr 200px 216px 130px;
+      align-items: center;
+      padding: 10px 0 10px;
+      border-bottom: 1px solid var(--hub-border-row);
+    }
+
+    .hub-col-header {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: var(--hub-muted);
+      text-transform: uppercase;
+    }
+
+    .hub-col-header.align-right { text-align: right; }
+
+    .hub-table-row {
+      display: grid;
+      grid-template-columns: 1fr 200px 216px 130px;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--hub-border-row);
+      cursor: pointer;
+      transition: opacity 0.12s ease;
+    }
+
+    .hub-table-row:hover .hub-row-name {
+      opacity: 0.65;
+    }
+
+    .hub-table-row.row-dimmed {
+      opacity: 0.35;
+    }
+
+    .hub-row-name {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--hub-text);
+      transition: opacity 0.12s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 16px;
+    }
+
+    .hub-row-type {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--hub-muted);
+      margin-top: 2px;
+    }
+
+    .hub-col-phase-num {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--hub-muted);
+      margin-bottom: 2px;
+    }
+
+    .hub-col-phase-name {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--hub-text);
+    }
+
+    .hub-col-date {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--hub-muted);
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .hub-stale-dot {
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--hub-stale);
+      flex-shrink: 0;
+    }
+
+    /* CTA row */
+    .hub-cta-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding-top: 40px;
+    }
+
+    .hub-new-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #111110;
+      background: var(--hub-accent);
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .hub-new-btn:hover  { opacity: 0.88; }
+    .hub-new-btn:active { transform: scale(0.97); }
+
+    .hub-slots {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--hub-muted);
+    }
+
+    .hub-max-note {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 11px;
+      color: var(--hub-muted);
+      line-height: 1.5;
+    }
+
+    .hub-empty {
+      padding: 40px 0;
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-size: 12px;
+      color: var(--hub-muted);
+    }
+
+    /* Force form to use dark palette on home screen */
+    #view-home .new-project-form {
+      background-color: #1a1a18;
+      border-color: #2a2a28;
+      margin-top: 0;
+    }
+
+    #view-home .form-input,
+    #view-home .form-select {
+      background-color: #111110;
+      border-color: #2a2a28;
+      color: #e8e4dc;
+    }
+
+    #view-home .form-input:focus,
+    #view-home .form-select:focus {
+      border-color: #e8c84a;
+    }
+
+    #view-home .form-label {
+      color: #666660;
+    }
+
+    /* ─── Project List (used elsewhere) ──────────────────────────────────────── */
+    .project-list-section { margin-bottom: 40px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .project-list {
+      border-top: 1px solid var(--color-border);
+    }
+
+    .project-row {
+      display: flex;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--color-border);
+      gap: 16px;
+      cursor: pointer;
+      transition: opacity 0.12s ease;
+    }
+
+    .project-row:hover .project-row-name {
+      opacity: 0.75;
+    }
+
+    .project-row.completed-project {
+      opacity: 0.45;
+    }
+
+    .project-row-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .project-row-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text);
+      transition: opacity 0.12s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .project-row-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 3px;
+    }
+
+    .type-pill {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+      padding: 1px 7px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .phase-label {
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+
+    .project-row-delete {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      padding: 4px 0;
+      background: none;
+      border: none;
+      font-family: inherit;
+      opacity: 0;
+      transition: opacity 0.12s ease, color 0.12s ease;
+    }
+
+    .project-row:hover .project-row-delete {
+      opacity: 1;
+    }
+
+    .project-row-delete:hover {
+      color: var(--color-text);
+    }
+
+    .empty-state {
+      padding: 40px 0;
+      color: var(--color-text-muted);
+      font-size: 14px;
+    }
+
+    /* ─── New Project Form ───────────────────────────────────────────────────── */
+    .new-project-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent-fg);
+      background-color: var(--color-accent);
+      border: none;
+      border-radius: var(--radius);
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .new-project-trigger:hover {
+      opacity: 0.88;
+    }
+
+    .new-project-trigger:active {
+      transform: scale(0.97);
+    }
+
+    .new-project-trigger .plus {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .max-projects-note {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+
+    .new-project-form {
+      margin-top: 24px;
+      padding: 24px;
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+    }
+
+    .new-project-form.hidden {
+      display: none;
+    }
+
+    .form-field {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      display: block;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .form-input {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-bg);
+      transition: border-color 0.15s ease;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--color-accent);
+    }
+
+    .form-select {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-bg);
+      outline: none;
+      appearance: none;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-select:focus {
+      border-color: var(--color-accent);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent-fg);
+      background-color: var(--color-accent);
+      padding: 9px 18px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+    }
+
+    .btn-secondary {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--color-text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 9px 0;
+      transition: color 0.12s ease;
+    }
+
+    .btn-secondary:hover {
+      color: var(--color-text);
+    }
+
+    /* ─── Phase Two-Column Layout ───────────────────────────────────────────── */
+    .phase-layout {
+      display: flex;
+      gap: 56px;
+      align-items: flex-start;
+    }
+
+    .phase-main {
+      flex: 1;
+      min-width: 0;
+      max-width: 640px;
+    }
+
+    .phase-aside {
+      flex: 1;
+      min-width: 220px;
+      position: sticky;
+      top: 56px;
+      align-self: flex-start;
+    }
+
+    /* ─── Progress Widget ────────────────────────────────────────────────────── */
+    .progress-widget {
+      margin-bottom: 32px;
+    }
+
+    .progress-widget-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: 16px;
+    }
+
+    .progress-circles {
+      display: flex;
+      flex-direction: row;
+      gap: 16px;
+    }
+
+    .progress-circle-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    @media (max-width: 960px) {
+      .phase-layout {
+        flex-direction: column;
+      }
+      .phase-aside {
+        position: static;
+        width: 100%;
+        min-width: unset;
+        flex: none;
+      }
+      .progress-circles {
+        max-width: 480px;
+      }
+    }
+
+    /* ─── Aside Checklist Widget ─────────────────────────────────────────────── */
+    .aside-checklist-widget {
+      margin-bottom: 32px;
+    }
+
+    .aside-checklist {
+      margin: 0;
+      padding: 0;
+    }
+
+    .aside-checklist .checklist-text {
+      font-size: 13px;
+    }
+
+    /* ─── Aside Documents ────────────────────────────────────────────────────── */
+    .aside-docs-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-border);
+      margin-bottom: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .aside-doc-add {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+      transition: color 0.12s ease;
+    }
+
+    .aside-doc-add:hover {
+      color: var(--color-text);
+    }
+
+    .aside-doc-entry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--color-border);
+      cursor: pointer;
+    }
+
+    .aside-doc-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      color: var(--color-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: opacity 0.12s ease;
+    }
+
+    .aside-doc-entry:hover .aside-doc-name {
+      opacity: 0.7;
+    }
+
+    .aside-doc-delete {
+      font-size: 14px;
+      color: var(--color-text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0 2px;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity 0.12s ease, color 0.12s ease;
+      flex-shrink: 0;
+    }
+
+    .aside-doc-entry:hover .aside-doc-delete {
+      opacity: 1;
+    }
+
+    .aside-doc-delete:hover {
+      color: var(--color-text);
+    }
+
+    /* ─── Phase View ─────────────────────────────────────────────────────────── */
+    .phase-header {
+      margin-bottom: 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .phase-eyebrow {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .phase-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--color-text);
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .phase-objective {
+      font-size: 14px;
+      color: var(--color-text-muted);
+      line-height: 1.65;
+      max-width: 520px;
+    }
+
+    /* ─── Phase Sections ─────────────────────────────────────────────────────── */
+    .phase-section {
+      margin-bottom: 40px;
+    }
+
+    .phase-section-header {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    /* ─── Task List ──────────────────────────────────────────────────────────── */
+    .task-list {
+      list-style: none;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid transparent;
+    }
+
+    .task-item:not(:last-child) {
+      border-bottom-color: var(--color-border);
+    }
+
+    .task-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      border: 1.5px solid var(--color-border);
+      border-radius: 2px;
+      cursor: pointer;
+      margin-top: 1px;
+      background-color: transparent;
+      transition: border-color 0.12s ease, background-color 0.12s ease;
+      position: relative;
+    }
+
+    .task-checkbox:checked {
+      background-color: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    .task-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 5px;
+      height: 8px;
+      border: 1.5px solid var(--color-accent-fg);
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .task-checkbox:hover:not(:checked) {
+      border-color: var(--color-accent);
+    }
+
+    .task-text {
+      flex: 1;
+      font-size: 14px;
+      color: var(--color-text);
+      line-height: 1.5;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 0;
+      resize: none;
+      font-family: inherit;
+      min-height: 22px;
+      transition: opacity 0.15s ease;
+    }
+
+    .task-text.editing {
+      cursor: text;
+    }
+
+    .task-text.done {
+      opacity: 0.4;
+      text-decoration: line-through;
+      text-decoration-color: var(--color-text-muted);
+    }
+
+    .task-edit,
+    .task-delete {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      opacity: 0;
+      transition: opacity 0.12s ease, color 0.12s ease;
+      padding: 0 2px;
+      line-height: 1;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    .task-item:hover .task-edit,
+    .task-item:hover .task-delete {
+      opacity: 1;
+    }
+
+    .task-edit:hover,
+    .task-delete:hover {
+      color: var(--color-text);
+    }
+
+    .task-edit.active {
+      opacity: 1;
+      color: var(--color-accent-fg);
+      background-color: var(--color-accent);
+      border-radius: 2px;
+      padding: 1px 5px;
+    }
+
+    .add-task-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+      transition: color 0.12s ease;
+    }
+
+    .add-task-link:hover {
+      color: var(--color-text);
+    }
+
+    /* ─── Checklist ──────────────────────────────────────────────────────────── */
+    .checklist {
+      list-style: none;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 9px 0;
+    }
+
+    .checklist-item:not(:last-child) {
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .checklist-text {
+      font-size: 14px;
+      color: var(--color-text);
+      line-height: 1.5;
+      flex: 1;
+      transition: opacity 0.15s ease;
+    }
+
+    .checklist-item.done-item .checklist-text {
+      opacity: 0.4;
+    }
+
+    /* ─── Notes ─────────────────────────────────────────────────────────────── */
+    .notes-textarea {
+      width: 100%;
+      min-height: 120px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-surface);
+      resize: vertical;
+      outline: none;
+      line-height: 1.65;
+      transition: border-color 0.15s ease;
+    }
+
+    .notes-textarea::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    .notes-textarea:focus {
+      border-color: var(--color-accent);
+    }
+
+    /* ─── Soft-Warn Banner ───────────────────────────────────────────────────── */
+    .warn-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      background-color: var(--color-warn-bg);
+      border: 1px solid var(--color-warn-border);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+    }
+
+    .warn-banner.hidden {
+      display: none;
+    }
+
+    .warn-banner-text {
+      flex: 1;
+      font-size: 13px;
+      color: var(--color-text);
+      line-height: 1.5;
+    }
+
+    .warn-banner-dismiss {
+      font-size: 14px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.12s ease;
+      flex-shrink: 0;
+    }
+
+    .warn-banner-dismiss:hover {
+      color: var(--color-text);
+    }
+
+    /* ─── Mindfulness Aside ─────────────────────────────────────────────────── */
+    .mindfulness-aside {
+      margin-top: 40px;
+      padding: 20px 20px 20px 24px;
+      border-left: 2px solid var(--color-border);
+    }
+
+    .mindfulness-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .mindfulness-list {
+      list-style: none;
+    }
+
+    .mindfulness-list li {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+      padding-bottom: 6px;
+    }
+
+    .mindfulness-list li:not(:last-child) {
+      margin-bottom: 4px;
+    }
+
+    /* ─── Phase Actions ──────────────────────────────────────────────────────── */
+    .phase-actions {
+      margin-top: 40px;
+      padding-top: 28px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .advance-btn {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent-fg);
+      background-color: var(--color-accent);
+      padding: 10px 22px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s ease;
+    }
+
+    .advance-btn:hover {
+      opacity: 0.88;
+    }
+
+    .advance-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ─── Completed Phase Panel ─────────────────────────────────────────────── */
+    .phase-complete-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px 18px;
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+    }
+
+    .phase-complete-notice-text {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    /* ─── Generic Phase Panel ────────────────────────────────────────────────── */
+    .phase-generic-content {
+      padding: 0;
+    }
+
+    /* ─── Special Fields (PRD url, Stack Decision) ───────────────────────────── */
+    .special-field {
+      margin-bottom: 20px;
+    }
+
+    .special-field-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .special-field-input {
+      width: 100%;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-surface);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .special-field-input:focus {
+      border-color: var(--color-accent);
+    }
+
+    /* ─── Documents List View ───────────────────────────────────────────────── */
+    .docs-list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .docs-list-title {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--color-text);
+    }
+
+    .docs-empty {
+      color: var(--color-text-muted);
+      font-size: 14px;
+      padding: 32px 0;
+    }
+
+    .doc-entry {
+      display: flex;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--color-border);
+      cursor: pointer;
+      gap: 16px;
+    }
+
+    .doc-entry:first-of-type {
+      border-top: 1px solid var(--color-border);
+    }
+
+    .doc-entry-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .doc-entry-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: opacity 0.12s ease;
+    }
+
+    .doc-entry:hover .doc-entry-title {
+      opacity: 0.75;
+    }
+
+    .doc-entry-meta {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+    }
+
+    .doc-entry-delete {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      padding: 4px 0;
+      background: none;
+      border: none;
+      font-family: inherit;
+      opacity: 0;
+      transition: opacity 0.12s ease, color 0.12s ease;
+    }
+
+    .doc-entry:hover .doc-entry-delete {
+      opacity: 1;
+    }
+
+    .doc-entry-delete:hover {
+      color: var(--color-text);
+    }
+
+    /* ─── Document Editor ───────────────────────────────────────────────────── */
+    .doc-editor-back {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 28px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+      transition: color 0.15s ease;
+    }
+
+    .doc-editor-back:hover {
+      color: var(--color-text);
+    }
+
+    .doc-title-input {
+      width: 100%;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--color-text);
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--color-border);
+      outline: none;
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+      font-family: inherit;
+      transition: border-color 0.15s ease;
+      display: block;
+    }
+
+    .doc-title-input:focus {
+      border-bottom-color: var(--color-accent);
+    }
+
+    .doc-title-input::placeholder {
+      color: var(--color-text-muted);
+      font-weight: 400;
+    }
+
+    .doc-content-textarea {
+      width: 100%;
+      min-height: 420px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      font-size: 14px;
+      color: var(--color-text);
+      background-color: var(--color-surface);
+      resize: vertical;
+      outline: none;
+      line-height: 1.75;
+      font-family: inherit;
+      transition: border-color 0.15s ease;
+    }
+
+    .doc-content-textarea::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    .doc-content-textarea:focus {
+      border-color: var(--color-accent);
+    }
+
+    .doc-editor-meta {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+
+    /* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: 3px;
+    }
+
+    /* ─── Utility ───────────────────────────────────────────────────────────── */
+    .hidden {
+      display: none !important;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ─── Sidebar ─────────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <!-- Home state -->
+    <div class="sidebar-home" id="sidebar-home">
+      <div class="sidebar-logo">Bob</div>
+      <div class="sidebar-tagline">A workflow guide for<br>solo founders who build.</div>
+    </div>
+
+    <!-- Project state (shown when a project is selected) -->
+    <div class="sidebar-project hidden" id="sidebar-project">
+      <div class="sidebar-project-header">
+        <button class="sidebar-back" id="back-to-home">
+          ← All projects
+        </button>
+        <div class="sidebar-project-name-row">
+          <div class="sidebar-project-name" id="sidebar-project-name">Project Name</div>
+          <button class="sidebar-settings-btn" id="sidebar-settings-btn" aria-label="Project settings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+        </div>
+        <div class="sidebar-project-type" id="sidebar-project-type">App</div>
+      </div>
+      <nav class="phase-stepper" id="phase-stepper">
+        <!-- Rendered by JS -->
+      </nav>
+    </div>
+  </aside>
+
+  <!-- ─── Main ────────────────────────────────────────────────────────────── -->
+  <main class="main" id="main">
+
+    <!-- Home view -->
+    <div id="view-home">
+      <div class="hub-topbar">
+        <span class="hub-topbar-wordmark">Bob</span>
+        <span class="hub-topbar-date" id="hub-date"></span>
+      </div>
+
+      <div id="home-featured-section"><!-- Rendered by JS --></div>
+      <div id="home-stack-section"><!-- Rendered by JS --></div>
+
+      <div id="new-project-area"><!-- Rendered by JS --></div>
+
+      <div class="new-project-form hidden" id="new-project-form">
+        <div class="form-field">
+          <label class="form-label" for="project-name-input">Project name</label>
+          <input type="text" id="project-name-input" class="form-input" placeholder="What are you building?" maxlength="80" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="project-type-select">Project type</label>
+          <select id="project-type-select" class="form-select">
+            <option value="" disabled selected>Select a type</option>
+            <option value="app">B2C / B2B App</option>
+            <option value="website">Website</option>
+            <option value="landing">Landing Page</option>
+            <option value="internal">Internal Tool</option>
+            <option value="marketing">Marketing Project</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" id="create-project-btn">Create project</button>
+          <button class="btn-secondary" id="cancel-new-project-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase view -->
+    <div id="view-phase" class="hidden">
+      <!-- Rendered by JS -->
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ─── Constants ───────────────────────────────────────────────────────────────
+
+  const PHASES = [
+    { id: '0',   label: 'Phase 0 — Discovery' },
+    { id: '0b',  label: 'Phase 0b — MVP Scope' },
+    { id: 'prd', label: 'PRD' },
+    { id: '1',   label: 'Phase 1 — Stack Decision' },
+    { id: '2',   label: 'Phase 2 — Scaffold' },
+    { id: '3',   label: 'Phase 3 — Design to Code' },
+    { id: '4',   label: 'Phase 4 — Backend Wiring' },
+    { id: '5',   label: 'Phase 5 — Review & Deploy' },
+  ];
+
+  const PHASE_LABELS = {
+    '0':   'Phase 0 — Discovery',
+    '0b':  'Phase 0b — MVP Scope',
+    'prd': 'PRD',
+    '1':   'Phase 1 — Stack Decision',
+    '2':   'Phase 2 — Scaffold',
+    '3':   'Phase 3 — Design to Code',
+    '4':   'Phase 4 — Backend Wiring',
+    '5':   'Phase 5 — Review & Deploy',
+  };
+
+  const TYPE_LABELS = {
+    app:       'B2C / B2B App',
+    website:   'Website',
+    landing:   'Landing Page',
+    internal:  'Internal Tool',
+    marketing: 'Marketing Project',
+  };
+
+  const PHASE_CONTENT = {
+    '0': {
+      title: 'Phase 0 — Discovery',
+      objective: 'Validate that a real problem exists worth solving before committing to build anything.',
+      universalTasks: [
+        'Define the problem in one sentence without mentioning a solution',
+        'Identify who specifically experiences this problem',
+        'Document what they currently do instead (the workaround)',
+        'List the top 3 assumptions you\'re making that could kill this project',
+        'Identify the closest existing alternatives',
+      ],
+      typeSpecificTasks: {
+        app:       'Conduct at least 3 problem interviews with real potential users',
+        website:   'Define the primary audience and the one action you want them to take',
+        landing:   'Define the primary audience and the one action you want them to take',
+        internal:  'Map the current manual process this tool replaces',
+        marketing: 'Define the campaign goal and the single metric that will define success',
+      },
+      checklist: [
+        'Problem statement written without mentioning a solution',
+        'Target user defined with at least 3 specific characteristics',
+        'Current workaround documented',
+        'Top assumptions listed',
+        'At least one existing alternative identified and analyzed',
+      ],
+      mindfulness: [
+        'A solution is not a problem statement. "I want to build an app that does X" is not a problem.',
+        'Talking to friends who agree with you is not validation.',
+        'If you can\'t articulate what people do today without your solution, you don\'t understand the problem yet.',
+        'Enthusiasm is not evidence.',
+      ],
+      nextPhase: '0b',
+      nextLabel: 'Advance to Phase 0b — MVP Scope',
+    },
+    '0b': {
+      title: 'Phase 0b — MVP Scope',
+      objective: 'Define the smallest possible version that delivers the core value — and nothing else.',
+      universalTasks: [
+        'List every feature you\'re tempted to build',
+        'For each feature, write the job it enables (what does the user achieve?)',
+        'Cut everything that doesn\'t enable the core job',
+        'Define P0 (launch blockers), P1 (v1 but not blockers), P2 (v2 and beyond)',
+        'Write the kill criteria: what result at day 60 would make you stop?',
+      ],
+      typeSpecificTasks: {
+        app:       'Define the single core flow a user must complete to get value — max 5 steps',
+        website:   'Define the 3 pages minimum to launch (usually: home, about, contact or equivalent)',
+        landing:   'Define the single conversion action and the 3 sections that lead to it',
+        internal:  'Define the one workflow this tool must replace to justify building it',
+        marketing: 'Define the deliverables for phase 1 only — not the full campaign',
+      },
+      checklist: [
+        'Full feature list written (including everything you want eventually)',
+        'Each feature mapped to a specific user job',
+        'P0 / P1 / P2 priorities assigned',
+        'Features without a clear job have been cut or deferred',
+        'Kill criteria written with specific metrics and thresholds',
+      ],
+      mindfulness: [
+        '"Minimum" means minimum. If you\'re not uncomfortable cutting, you haven\'t cut enough.',
+        'Every feature added to v1 multiplies your build time non-linearly.',
+        'P2 is not a promise. It\'s a parking lot.',
+        'Kill criteria defined now are worth 10x kill criteria defined later.',
+      ],
+      nextPhase: 'prd',
+      nextLabel: 'Advance to PRD',
+    },
+    'prd': {
+      title: 'PRD — Product Requirements Document',
+      objective: 'Produce a single written document that captures everything needed to build v1 — so Claude Code and any future collaborator can work from it without asking you to re-explain the product.',
+      universalTasks: [
+        'Complete the PRD using your standard template',
+        'Export it as docs/PRD.md in the project repo',
+        'Add the Figma file link to the PRD',
+        'Reference the PRD in your project\'s CLAUDE.md',
+      ],
+      typeSpecificTasks: {},
+      checklist: [
+        'Problem definition section complete',
+        'Target user defined with persona',
+        'MVP features listed with acceptance criteria',
+        'Technical stack section filled',
+        'North Star metric defined',
+        'Kill criteria documented',
+        'PRD exported to docs/PRD.md in repo',
+        'Figma file link added',
+      ],
+      mindfulness: [
+        'A PRD written before Phase 0 and 0b are complete is expensive fiction.',
+        'The PRD is a living document — update it when decisions change, don\'t let it go stale.',
+        'The technical requirements section of the PRD is what drives Phase 1 (stack decision).',
+        'If you can\'t fill in the success metrics section, your scope is still unclear.',
+      ],
+      nextPhase: '1',
+      nextLabel: 'Advance to Phase 1 — Stack Decision',
+      extraFields: ['prdUrl'],
+    },
+    '1': {
+      title: 'Phase 1 — Stack Decision',
+      objective: 'Choose the technical stack for this project based on its actual requirements — not habits or defaults.',
+      universalTasks: [
+        'Read the PRD technical requirements section before making any decision',
+        'Decide: does this project need SEO? (determines frontend framework)',
+        'Decide: does this project need a backend? (determines if Supabase or simpler)',
+        'Decide: does this project need auth? (determines complexity)',
+        'Document the stack decision with a one-line reason for each choice',
+      ],
+      typeSpecificTasks: {
+        app:       'Define the database schema at a high level before writing code',
+        website:   'Decide between Next.js (SEO-critical) and Astro (content-heavy, static)',
+        landing:   'Consider whether a no-code tool (Framer, Webflow) is faster than code',
+        internal:  'Define who has access and how — even if auth is simple',
+        marketing: 'Decide which deliverables need code and which don\'t',
+      },
+      checklist: [
+        'Frontend framework chosen with reason documented',
+        'Backend/database decision made (or explicitly decided not needed)',
+        'Auth approach decided',
+        'Hosting/deployment target confirmed',
+        'Stack written into project CLAUDE.md',
+      ],
+      mindfulness: [
+        'The best stack is the one that ships. Not the most impressive one.',
+        'Next.js has real complexity cost for non-developers. Only use it when SEO is genuinely required.',
+        'Supabase is the right default for apps, but overkill for a landing page.',
+        'Deciding the stack before reading the PRD is how you end up rebuilding.',
+      ],
+      nextPhase: '2',
+      nextLabel: 'Advance to Phase 2 — Scaffold',
+      extraFields: ['stackDecision'],
+    },
+    '2': {
+      title: 'Phase 2 — Scaffold',
+      objective: 'Set up the project repository with the correct structure, configuration, and security baseline before writing a single line of product code.',
+      universalTasks: [
+        'Create the GitHub repository',
+        'Set up the folder structure per global CLAUDE.md conventions',
+        'Create .gitignore — include .env* before the first commit',
+        'Create docs/ folder with CONTEXT.md and PRD.md',
+        'Create .claude/ folder with CLAUDE.md, settings.json, and agents/',
+        'Configure secrets management per stack',
+        'Make the first commit with scaffolding only — no product code yet',
+      ],
+      typeSpecificTasks: {
+        app:       'Initialize the framework (Vite or Next.js)',
+        website:   'Initialize the framework (Vite, Next.js, or Astro)',
+        landing:   'Decide if this is a single HTML file or a framework — scaffold accordingly',
+        internal:  'Set up access control before any UI work',
+        marketing: 'Create the file/folder structure for deliverables and assets',
+      },
+      checklist: [
+        'GitHub repo created',
+        '.gitignore includes .env*',
+        'Folder structure matches global convention',
+        'docs/CONTEXT.md committed',
+        'docs/PRD.md committed',
+        '.claude/CLAUDE.md committed',
+        '.claude/settings.json with deny rules committed',
+        'Three subagent files committed',
+        'First scaffold commit pushed',
+      ],
+      mindfulness: [
+        '.env* must be in .gitignore before the first commit. Not after.',
+        'The scaffold commit is not the place to start building features.',
+        'A CLAUDE.md with no stack info is worse than no CLAUDE.md — Claude Code will make wrong assumptions.',
+        'The reviewer subagent should check the scaffold before Phase 3 begins.',
+      ],
+      nextPhase: '3',
+      nextLabel: 'Advance to Phase 3 — Design to Code',
+    },
+    '3': {
+      title: 'Phase 3 — Design to Code',
+      objective: 'Translate Figma designs into working frontend components, systematically and without skipping the design system foundations.',
+      universalTasks: [
+        'Connect Figma MCP to Claude Code for the project file',
+        'Build design tokens and CSS custom properties first (colors, typography, spacing)',
+        'Build layout and navigation before content components',
+        'Build reusable components before page-level compositions',
+        'Reference Figma frames explicitly in builder subagent prompts',
+      ],
+      typeSpecificTasks: {
+        app:       'Build the core flow screens first (the flow defined in the PRD)',
+        website:   'Build the component library before assembling pages',
+        landing:   'Build above-the-fold first, then scroll sections, then footer',
+        internal:  'Prioritize function over form — tables, forms, and navigation before polish',
+        marketing: 'Define asset formats and sizes before designing in Figma',
+      },
+      checklist: [
+        'Figma MCP connected and project file accessible',
+        'Design tokens/CSS variables defined and committed',
+        'Navigation and layout structure built',
+        'Core components built (list them in notes)',
+        'Core user flow navigable in browser',
+        'Reviewer subagent run on component code',
+      ],
+      mindfulness: [
+        'Start with tokens, not components. A component built without the design system will need rebuilding.',
+        'Figma MCP gives Claude Code direct access to your file — use frame names as references.',
+        'Every component should be tested in isolation before being composed into a page.',
+        'Don\'t polish until the structure is right.',
+      ],
+      nextPhase: '4',
+      nextLabel: 'Advance to Phase 4 — Backend Wiring',
+    },
+    '4': {
+      title: 'Phase 4 — Backend Wiring',
+      objective: 'Connect the frontend to data persistence, authentication, and any external services — in that order.',
+      universalTasks: [
+        'Define and create the database schema',
+        'Set up authentication (if required)',
+        'Implement Row Level Security (RLS) policies before writing any data queries',
+        'Connect frontend components to real data (replace all mock data)',
+        'Test every data operation: create, read, update, delete',
+      ],
+      typeSpecificTasks: {
+        app:       'Auth before data. RLS before queries. Never the other way around.',
+        website:   'If CMS-backed, connect the content source and test with real content',
+        landing:   'Connect the conversion action (form submission, waitlist signup)',
+        internal:  'Verify access control is working before connecting any real data',
+        marketing: 'Connect any tracking, analytics, or automation workflows (n8n)',
+      },
+      checklist: [
+        'Database schema created and documented',
+        'Authentication working (if applicable)',
+        'RLS policies implemented and tested (if applicable)',
+        'All mock data replaced with real data fetching',
+        'Error states handled (empty state, loading state, error state)',
+        'Reviewer subagent run on all data-touching code',
+      ],
+      mindfulness: [
+        'RLS policies in Supabase are not optional. Without them, all authenticated users can read all data.',
+        'Never test auth flows with production credentials.',
+        'Every external API integration needs error handling — what happens when it\'s down?',
+        'The Supabase MCP lets Claude Code interact with your database directly — use it carefully.',
+      ],
+      nextPhase: '5',
+      nextLabel: 'Advance to Phase 5 — Review & Deploy',
+    },
+    '5': {
+      title: 'Phase 5 — Review & Deploy',
+      objective: 'Ship a version that works, is secure, and can be maintained — then stop adding features.',
+      universalTasks: [
+        'Run the reviewer subagent on the full codebase',
+        'Fix all critical and warning findings before deploying',
+        'Test the complete user flow end-to-end',
+        'Set up deployment pipeline (Vercel or equivalent)',
+        'Configure environment variables in the deployment platform (never in code)',
+        'Deploy to staging first, verify, then deploy to production',
+        'Document the deployment setup in docs/CONTEXT.md',
+      ],
+      typeSpecificTasks: {
+        app:       'Test auth flow, data persistence, and core job completion end-to-end',
+        website:   'Test all pages, all links, and performance (target: <2s load on 4G)',
+        landing:   'Test the conversion action and verify it reaches the right destination',
+        internal:  'Test with a real use case, not synthetic test data',
+        marketing: 'QA all deliverables against the brief before handoff or publish',
+      },
+      checklist: [
+        'Reviewer subagent run on full codebase',
+        'Critical findings resolved',
+        'Full user flow tested end-to-end',
+        'Deployment pipeline configured',
+        'Environment variables set in deployment platform (not in code)',
+        'Deployed to staging and verified',
+        'Deployed to production',
+        'Deployment documented in docs/CONTEXT.md',
+        'v1.1 scope defined (or explicitly decided not to continue)',
+      ],
+      mindfulness: [
+        '"Done" means the core job works reliably — not that every edge case is handled.',
+        'Deploy to staging before production, even if staging is just a preview URL.',
+        'Environment variables set in the deployment platform, never committed to the repo.',
+        'The first deployment is not the last — define what v1.1 means before closing this phase.',
+      ],
+      nextPhase: null,
+      nextLabel: 'Mark project complete',
+    },
+  };
+
+  // ─── State ───────────────────────────────────────────────────────────────────
+
+  let state = {
+    projects: [],       // array of project summaries
+    activeProjectId: null,
+    activePhaseId: null,
+    activeDocumentId: null,
+    projectData: {},    // cache of full project state (keyed by project id)
+    warnDismissed: false,
+  };
+
+  // ─── Persistence Helpers ─────────────────────────────────────────────────────
+
+  function loadProjects() {
+    try {
+      const raw = localStorage.getItem('bob_projects');
+      if (raw) {
+        return JSON.parse(raw);
+      }
+    } catch (e) {
+      console.error('bob: failed to read bob_projects', e);
+    }
+    return [];
+  }
+
+  function saveProjects(projects) {
+    try {
+      localStorage.setItem('bob_projects', JSON.stringify(projects));
+    } catch (e) {
+      console.error('bob: failed to write bob_projects', e);
+    }
+  }
+
+  function loadProjectData(id) {
+    try {
+      const raw = localStorage.getItem('bob_project_' + id);
+      if (raw) {
+        return JSON.parse(raw);
+      }
+    } catch (e) {
+      console.error('bob: failed to read bob_project_' + id, e);
+    }
+    return null;
+  }
+
+  function saveProjectData(data) {
+    try {
+      data.updatedAt = Date.now();
+      localStorage.setItem('bob_project_' + data.id, JSON.stringify(data));
+      // Update summary in projects array
+      const idx = state.projects.findIndex(p => p.id === data.id);
+      if (idx !== -1) {
+        state.projects[idx].updatedAt = data.updatedAt;
+        state.projects[idx].currentPhase = data.currentPhase;
+        state.projects[idx].status = data.status;
+        saveProjects(state.projects);
+      }
+    } catch (e) {
+      console.error('bob: failed to write bob_project_' + data.id, e);
+    }
+  }
+
+  // ─── ID Generators ───────────────────────────────────────────────────────────
+
+  function newProjectId() {
+    return 'proj_' + Date.now().toString(36);
+  }
+
+  function newTaskId() {
+    return 't_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  }
+
+  function newChecklistId() {
+    return 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  }
+
+  // ─── Default Phase Data ───────────────────────────────────────────────────────
+
+  function buildDefaultPhaseData(phaseId, projectType) {
+    const content = PHASE_CONTENT[phaseId];
+    if (!content) return { status: 'locked', tasks: [], checklist: [], notes: '' };
+
+    const tasks = content.universalTasks.map(text => ({
+      id: newTaskId(),
+      text,
+      done: false,
+      custom: false,
+    }));
+
+    const typeTask = content.typeSpecificTasks && content.typeSpecificTasks[projectType];
+    if (typeTask) {
+      tasks.push({
+        id: newTaskId(),
+        text: typeTask,
+        done: false,
+        custom: false,
+      });
+    }
+
+    const checklist = content.checklist.map(text => ({
+      id: newChecklistId(),
+      text,
+      done: false,
+    }));
+
+    return {
+      status: 'locked',
+      tasks,
+      checklist,
+      notes: '',
+      documents: [],
+      unlockedAt: null,
+      completedAt: null,
+    };
+  }
+
+  function buildNewProjectData(id, name, type) {
+    const phases = {};
+    PHASES.forEach((phase, index) => {
+      phases[phase.id] = buildDefaultPhaseData(phase.id, type);
+      if (index === 0) {
+        phases[phase.id].status = 'active';
+        phases[phase.id].unlockedAt = Date.now();
+      }
+    });
+
+    return {
+      id,
+      name,
+      type,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      currentPhase: '0',
+      status: 'active',
+      phases,
+      prdUrl: '',
+      stackDecision: '',
+      description: '',
+    };
+  }
+
+  // ─── Phase Navigation Order ───────────────────────────────────────────────────
+
+  const PHASE_ORDER = ['0', '0b', 'prd', '1', '2', '3', '4', '5'];
+
+  function phaseIndex(phaseId) {
+    return PHASE_ORDER.indexOf(phaseId);
+  }
+
+  function nextPhaseId(phaseId) {
+    const idx = phaseIndex(phaseId);
+    if (idx === -1 || idx >= PHASE_ORDER.length - 1) return null;
+    return PHASE_ORDER[idx + 1];
+  }
+
+  // ─── Render: Project List ─────────────────────────────────────────────────────
+
+  // ─── Utilities ────────────────────────────────────────────────────────────────
+
+  function formatRelativeDate(ts) {
+    if (!ts) return '';
+    const now = Date.now();
+    const diff = now - ts;
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 30) return `${days} days ago`;
+    const d = new Date(ts);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function getTaskProgress(projectData, phaseId) {
+    if (!projectData || !projectData.phases || !projectData.phases[phaseId]) return { done: 0, total: 0 };
+    const tasks = projectData.phases[phaseId].tasks || [];
+    return { done: tasks.filter(t => t.done).length, total: tasks.length };
+  }
+
+  function loadFullProjectData(projectId) {
+    try {
+      const raw = localStorage.getItem(`bob_project_${projectId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  // ─── Home Hub Helpers ─────────────────────────────────────────────────────────
+
+  const TYPE_SHORT = {
+    app:       'APP',
+    website:   'SITE',
+    landing:   'LANDING',
+    internal:  'INTERNAL',
+    marketing: 'MKTG',
+  };
+
+  function formatTodayDate() {
+    return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  }
+
+  function getPhaseParts(phaseId) {
+    const label = PHASE_LABELS[phaseId] || phaseId;
+    if (label.includes(' — ')) {
+      const idx = label.indexOf(' — ');
+      return { num: label.slice(0, idx), name: label.slice(idx + 3) };
+    }
+    return { num: label, name: '' };
+  }
+
+  function buildPhasePipeline(fullData, currentPhase, size) {
+    const wrap = document.createElement('div');
+    wrap.className = 'hub-pipeline';
+    const pipClass = size === 'hero' ? 'pip-hero' : 'pip-table';
+    PHASE_ORDER.forEach(pid => {
+      const pip = document.createElement('span');
+      const phaseStatus = fullData && fullData.phases && fullData.phases[pid]
+        ? fullData.phases[pid].status : '';
+      let stateClass;
+      if (phaseStatus === 'complete') {
+        stateClass = 'pip-done';
+      } else if (pid === currentPhase) {
+        stateClass = 'pip-active';
+      } else {
+        stateClass = 'pip-future';
+      }
+      pip.className = `hub-pip ${pipClass} ${stateClass}`;
+      wrap.appendChild(pip);
+    });
+    return wrap;
+  }
+
+  function getNextAction(fullData, phaseId) {
+    if (!fullData || !fullData.phases || !fullData.phases[phaseId]) return null;
+    const task = fullData.phases[phaseId].tasks.find(t => !t.done);
+    return task ? task.text : null;
+  }
+
+  // ─── Render: Home Screen ──────────────────────────────────────────────────────
+
+  function renderProjectList() {
+    renderHomeScreen();
+  }
+
+  function renderHomeScreen() {
+    const featuredEl = document.getElementById('home-featured-section');
+    const stackEl    = document.getElementById('home-stack-section');
+    const ctaEl      = document.getElementById('new-project-area');
+    const dateEl     = document.getElementById('hub-date');
+
+    featuredEl.innerHTML = '';
+    stackEl.innerHTML    = '';
+    ctaEl.innerHTML      = '';
+
+    if (dateEl) dateEl.textContent = formatTodayDate();
+
+    const allSorted = [...state.projects].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    const active    = allSorted.filter(p => p.status === 'active');
+
+    // ── Section 1: Hero (most recently updated active project) ──
+    if (active.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'hub-empty';
+      empty.textContent = 'No active projects — start one below.';
+      featuredEl.appendChild(empty);
+    } else {
+      const featured  = active[0];
+      const fullData  = loadFullProjectData(featured.id);
+      const progress  = getTaskProgress(fullData, featured.currentPhase);
+      const nextTask  = getNextAction(fullData, featured.currentPhase);
+      const parts     = getPhaseParts(featured.currentPhase);
+      const typeShort = TYPE_SHORT[featured.type] || featured.type.toUpperCase();
+
+      const eyebrow = document.createElement('div');
+      eyebrow.className = 'hub-eyebrow';
+      eyebrow.textContent = 'Continue working';
+      featuredEl.appendChild(eyebrow);
+
+      const card = document.createElement('div');
+      card.className = 'hub-hero-card';
+
+      // Top row: name + badge
+      const topRow = document.createElement('div');
+      topRow.className = 'hub-hero-top';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'hub-hero-name';
+      nameEl.textContent = featured.name;
+      topRow.appendChild(nameEl);
+
+      const badge = document.createElement('span');
+      badge.className = 'hub-type-badge';
+      badge.textContent = typeShort;
+      topRow.appendChild(badge);
+      card.appendChild(topRow);
+
+      // Phase label
+      const phaseEl = document.createElement('div');
+      phaseEl.className = 'hub-hero-phase';
+      if (parts.name) {
+        phaseEl.innerHTML = `${escapeHtml(parts.num)} — <span class="hub-hero-phase-accent">${escapeHtml(parts.name)}</span>`;
+      } else {
+        phaseEl.textContent = parts.num;
+      }
+      card.appendChild(phaseEl);
+
+      // Next action
+      const naBox = document.createElement('div');
+      naBox.className = 'hub-next-action';
+
+      const naLabel = document.createElement('span');
+      naLabel.className = 'hub-next-action-label';
+      naLabel.textContent = '→ Next action';
+      naBox.appendChild(naLabel);
+
+      const naContent = document.createElement('div');
+      naContent.className = 'hub-next-action-content';
+
+      const naText = document.createElement('div');
+      naText.className = 'hub-next-action-text';
+      naText.textContent = nextTask || 'All tasks complete — mark phase done.';
+      naContent.appendChild(naText);
+      naBox.appendChild(naContent);
+      card.appendChild(naBox);
+
+      // Footer: pipeline + meta
+      const footer = document.createElement('div');
+      footer.className = 'hub-hero-footer';
+      footer.appendChild(buildPhasePipeline(fullData, featured.currentPhase, 'hero'));
+
+      const meta = document.createElement('span');
+      meta.className = 'hub-footer-meta';
+      const dateStr = formatRelativeDate(featured.updatedAt);
+      meta.textContent = `${progress.done}/${progress.total} tasks · ${dateStr}`;
+      footer.appendChild(meta);
+      card.appendChild(footer);
+
+      card.addEventListener('click', () => openProject(featured.id));
+      featuredEl.appendChild(card);
+    }
+
+    // ── Section 2: All projects table ──
+    const stackWrap = document.createElement('div');
+    stackWrap.className = 'hub-stack-wrap';
+
+    const stackHeader = document.createElement('div');
+    stackHeader.className = 'hub-stack-header';
+
+    const stackTitle = document.createElement('span');
+    stackTitle.className = 'hub-stack-title';
+    stackTitle.textContent = 'All projects';
+    stackHeader.appendChild(stackTitle);
+
+    const stackCount = document.createElement('span');
+    stackCount.className = 'hub-stack-count';
+    stackCount.textContent = `${state.projects.length} / 5`;
+    stackHeader.appendChild(stackCount);
+    stackWrap.appendChild(stackHeader);
+
+    // Table headers
+    const headers = document.createElement('div');
+    headers.className = 'hub-table-headers';
+    ['Project', 'Phase', 'Progress', 'Last opened'].forEach((h, i) => {
+      const col = document.createElement('span');
+      col.className = 'hub-col-header' + (i === 3 ? ' align-right' : '');
+      col.textContent = h;
+      headers.appendChild(col);
+    });
+    stackWrap.appendChild(headers);
+
+    // Table rows (all projects, sorted by updatedAt)
+    allSorted.forEach(project => {
+      const fullData   = loadFullProjectData(project.id);
+      const progress   = getTaskProgress(fullData, project.currentPhase);
+      const parts      = getPhaseParts(project.currentPhase);
+      const isInactive = project.status !== 'active';
+      const daysOld    = project.updatedAt ? Math.floor((Date.now() - project.updatedAt) / 86400000) : 999;
+
+      const row = document.createElement('div');
+      row.className = 'hub-table-row' + (isInactive ? ' row-dimmed' : '');
+
+      // Col 1: name + type
+      const col1 = document.createElement('div');
+      const rowName = document.createElement('div');
+      rowName.className = 'hub-row-name';
+      rowName.textContent = project.name;
+      const rowType = document.createElement('div');
+      rowType.className = 'hub-row-type';
+      rowType.textContent = project.type;
+      col1.appendChild(rowName);
+      col1.appendChild(rowType);
+      row.appendChild(col1);
+
+      // Col 2: phase
+      const col2 = document.createElement('div');
+      const phaseNum = document.createElement('div');
+      phaseNum.className = 'hub-col-phase-num';
+      phaseNum.textContent = parts.num;
+      const phaseName = document.createElement('div');
+      phaseName.className = 'hub-col-phase-name';
+      phaseName.textContent = parts.name || parts.num;
+      col2.appendChild(phaseNum);
+      if (parts.name) col2.appendChild(phaseName);
+      row.appendChild(col2);
+
+      // Col 3: pipeline
+      const col3 = document.createElement('div');
+      col3.appendChild(buildPhasePipeline(fullData, project.currentPhase, 'table'));
+      row.appendChild(col3);
+
+      // Col 4: date + stale dot
+      const col4 = document.createElement('div');
+      col4.className = 'hub-col-date';
+      col4.textContent = formatRelativeDate(project.updatedAt);
+      if (daysOld > 7) {
+        const dot = document.createElement('span');
+        dot.className = 'hub-stale-dot';
+        dot.title = 'Not opened in over 7 days';
+        col4.appendChild(dot);
+      }
+      row.appendChild(col4);
+
+      row.addEventListener('click', () => openProject(project.id));
+      stackWrap.appendChild(row);
+    });
+
+    stackEl.appendChild(stackWrap);
+
+    // ── CTA ──
+    const ctaRow = document.createElement('div');
+    ctaRow.className = 'hub-cta-row';
+
+    if (state.projects.length >= 5) {
+      const maxNote = document.createElement('p');
+      maxNote.className = 'hub-max-note';
+      maxNote.textContent = 'All 5 slots in use — complete or delete a project to add a new one.';
+      ctaRow.appendChild(maxNote);
+    } else {
+      const btn = document.createElement('button');
+      btn.className = 'hub-new-btn';
+      btn.id = 'new-project-btn';
+      btn.innerHTML = '+ &nbsp;New project';
+      btn.addEventListener('click', () => {
+        document.getElementById('new-project-form').classList.remove('hidden');
+        btn.style.display = 'none';
+        document.getElementById('project-name-input').focus();
+      });
+      ctaRow.appendChild(btn);
+
+      const slots = document.createElement('span');
+      slots.className = 'hub-slots';
+      slots.textContent = `${5 - state.projects.length} slot${5 - state.projects.length === 1 ? '' : 's'} remaining`;
+      ctaRow.appendChild(slots);
+    }
+
+    ctaEl.appendChild(ctaRow);
+  }
+
+  // ─── Render: Sidebar Stepper ──────────────────────────────────────────────────
+
+  function renderStepper() {
+    const stepper = document.getElementById('phase-stepper');
+    stepper.innerHTML = '';
+
+    const project = getCurrentProject();
+    if (!project) return;
+
+    const currentIdx = phaseIndex(project.currentPhase);
+
+    PHASES.forEach((phase, index) => {
+      const phaseState = project.phases[phase.id];
+      const isActive = phase.id === state.activePhaseId;
+      const isDone   = phaseState && phaseState.status === 'complete';
+      const isPast   = index < currentIdx;
+      const isFuture = index > currentIdx;
+
+      let className = 'phase-step';
+      if (isActive)  className += ' active';
+      if (isDone || isPast) className += ' completed';
+      if (isFuture)  className += ' future';
+
+      const step = document.createElement('div');
+      step.className = className;
+      step.dataset.phaseId = phase.id;
+
+      step.innerHTML = `
+        <span class="phase-step-indicator">${isDone || isPast ? '' : (index + 1)}</span>
+        <span class="phase-step-label">${escapeHtml(phase.label)}</span>
+      `;
+
+      step.addEventListener('click', () => {
+        navigateToPhase(phase.id);
+      });
+
+      stepper.appendChild(step);
+    });
+  }
+
+  // ─── Render: Phase Panel ──────────────────────────────────────────────────────
+
+  function renderPhasePanel() {
+    const phaseView = document.getElementById('view-phase');
+    phaseView.innerHTML = '';
+
+    const project = getCurrentProject();
+    if (!project || !state.activePhaseId) return;
+
+    const phaseId = state.activePhaseId;
+    const content = PHASE_CONTENT[phaseId];
+    const phaseData = project.phases[phaseId];
+
+    if (!content || !phaseData) {
+      phaseView.innerHTML = '<p style="color:var(--color-text-muted);font-size:13px;">Phase data not available.</p>';
+      return;
+    }
+
+    // ── Two-column layout ──
+    const layout = document.createElement('div');
+    layout.className = 'phase-layout';
+
+    const main = document.createElement('div');
+    main.className = 'phase-main';
+
+    const aside = document.createElement('div');
+    aside.className = 'phase-aside';
+
+    // ── Header ──
+    const header = document.createElement('div');
+    header.className = 'phase-header';
+    header.innerHTML = `
+      <div class="phase-eyebrow">${escapeHtml(project.name)}</div>
+      <h2 class="phase-title">${escapeHtml(content.title)}</h2>
+      <p class="phase-objective">${escapeHtml(content.objective)}</p>
+    `;
+    main.appendChild(header);
+
+    // ── Soft-warn banner ──
+    const warnBanner = document.createElement('div');
+    warnBanner.className = 'warn-banner hidden';
+    warnBanner.id = 'warn-banner';
+    warnBanner.innerHTML = `
+      <div class="warn-banner-text" id="warn-banner-text"></div>
+      <button class="warn-banner-dismiss" id="warn-banner-dismiss" aria-label="Dismiss">×</button>
+    `;
+    main.appendChild(warnBanner);
+
+    // ── Tasks ──
+    const tasksSection = document.createElement('div');
+    tasksSection.className = 'phase-section';
+    tasksSection.innerHTML = '<div class="phase-section-header">Tasks</div>';
+
+    const taskList = document.createElement('ul');
+    taskList.className = 'task-list';
+    taskList.id = 'task-list';
+    phaseData.tasks.forEach(task => taskList.appendChild(buildTaskItem(task, project, phaseId)));
+    tasksSection.appendChild(taskList);
+
+    const addTaskBtn = document.createElement('button');
+    addTaskBtn.className = 'add-task-link';
+    addTaskBtn.innerHTML = '+ Add task';
+    addTaskBtn.addEventListener('click', () => addCustomTask(project, phaseId));
+    tasksSection.appendChild(addTaskBtn);
+    main.appendChild(tasksSection);
+
+    // ── Extra fields ──
+    if (content.extraFields && content.extraFields.length > 0) {
+      const extraSection = document.createElement('div');
+      extraSection.className = 'phase-section';
+
+      if (content.extraFields.includes('prdUrl')) {
+        const prdField = document.createElement('div');
+        prdField.className = 'special-field';
+        prdField.innerHTML = `
+          <label class="special-field-label" for="prd-url-input">Figma / Notion link</label>
+          <input type="url" id="prd-url-input" class="special-field-input" placeholder="Paste your PRD or Figma URL here" value="${escapeHtml(project.prdUrl || '')}" />
+        `;
+        extraSection.appendChild(prdField);
+      }
+
+      if (content.extraFields.includes('stackDecision')) {
+        const stackField = document.createElement('div');
+        stackField.className = 'special-field';
+        stackField.innerHTML = `
+          <label class="special-field-label" for="stack-decision-input">Stack decision</label>
+          <input type="text" id="stack-decision-input" class="special-field-input" placeholder="Document your stack choices here" value="${escapeHtml(project.stackDecision || '')}" />
+        `;
+        extraSection.appendChild(stackField);
+      }
+
+      main.appendChild(extraSection);
+    }
+
+    // ── Notes ──
+    const notesSection = document.createElement('div');
+    notesSection.className = 'phase-section';
+    notesSection.innerHTML = '<div class="phase-section-header">Notes</div>';
+    const notesTA = document.createElement('textarea');
+    notesTA.className = 'notes-textarea';
+    notesTA.id = 'phase-notes';
+    notesTA.placeholder = 'Notes, decisions, observations…';
+    notesTA.value = phaseData.notes || '';
+    notesSection.appendChild(notesTA);
+    main.appendChild(notesSection);
+
+    // ── Mindfulness ──
+    if (content.mindfulness && content.mindfulness.length > 0) {
+      const mindful = document.createElement('div');
+      mindful.className = 'mindfulness-aside';
+      mindful.innerHTML = `
+        <div class="mindfulness-label">Be mindful of</div>
+        <ul class="mindfulness-list">
+          ${content.mindfulness.map(m => `<li>${escapeHtml(m)}</li>`).join('')}
+        </ul>
+      `;
+      main.appendChild(mindful);
+    }
+
+    // ── Phase actions ──
+    const actions = document.createElement('div');
+    actions.className = 'phase-actions';
+
+    if (content.nextPhase !== undefined) {
+      const advanceBtn = document.createElement('button');
+      advanceBtn.className = 'advance-btn';
+      advanceBtn.id = 'advance-btn';
+      advanceBtn.textContent = content.nextPhase === null ? 'Mark project complete' : (content.nextLabel || 'Advance to next phase');
+      advanceBtn.addEventListener('click', () => handleAdvance(project, phaseId, content));
+      actions.appendChild(advanceBtn);
+    }
+
+    main.appendChild(actions);
+
+    // ── Aside: Progress ──
+    const taskDone   = phaseData.tasks.filter(t => t.done).length;
+    const taskTotal  = phaseData.tasks.length;
+    const checkDone  = phaseData.checklist.filter(c => c.done).length;
+    const checkTotal = phaseData.checklist.length;
+
+    const progressWidget = document.createElement('div');
+    progressWidget.className = 'progress-widget';
+
+    const progressTitle = document.createElement('div');
+    progressTitle.className = 'progress-widget-title';
+    progressTitle.textContent = 'Progress';
+    progressWidget.appendChild(progressTitle);
+
+    const circlesRow = document.createElement('div');
+    circlesRow.className = 'progress-circles';
+
+    const tasksWrap = document.createElement('div');
+    tasksWrap.className = 'progress-circle-wrap';
+    tasksWrap.appendChild(buildProgressCircle(taskDone, taskTotal, 'Tasks', 'progress-tasks-arc', 'progress-tasks-count'));
+    circlesRow.appendChild(tasksWrap);
+
+    const checkWrap = document.createElement('div');
+    checkWrap.className = 'progress-circle-wrap';
+    checkWrap.appendChild(buildProgressCircle(checkDone, checkTotal, 'Checklist', 'progress-check-arc', 'progress-check-count'));
+    circlesRow.appendChild(checkWrap);
+
+    progressWidget.appendChild(circlesRow);
+    aside.appendChild(progressWidget);
+
+    // ── Aside: Completion Checklist ──
+    const asideChecklist = document.createElement('div');
+    asideChecklist.className = 'aside-checklist-widget';
+
+    const checklistTitle = document.createElement('div');
+    checklistTitle.className = 'progress-widget-title';
+    checklistTitle.textContent = 'Completion checklist';
+    asideChecklist.appendChild(checklistTitle);
+
+    const checklistUl = document.createElement('ul');
+    checklistUl.className = 'checklist aside-checklist';
+    checklistUl.id = 'phase-checklist';
+    phaseData.checklist.forEach(item => checklistUl.appendChild(buildChecklistItem(item, project, phaseId)));
+    asideChecklist.appendChild(checklistUl);
+    aside.appendChild(asideChecklist);
+
+    // ── Aside: Documents ──
+    const docsWidget = document.createElement('div');
+
+    const docsTitleRow = document.createElement('div');
+    docsTitleRow.className = 'aside-docs-title';
+    docsTitleRow.innerHTML = '<span>Documents</span>';
+    const addDocBtn = document.createElement('button');
+    addDocBtn.className = 'aside-doc-add';
+    addDocBtn.textContent = '+ Add';
+    addDocBtn.addEventListener('click', () => createDocument(project, phaseId));
+    docsTitleRow.appendChild(addDocBtn);
+    docsWidget.appendChild(docsTitleRow);
+
+    (phaseData.documents || []).forEach(doc => {
+      const entry = document.createElement('div');
+      entry.className = 'aside-doc-entry';
+
+      const name = document.createElement('span');
+      name.className = 'aside-doc-name';
+      name.textContent = doc.title || 'Untitled';
+
+      const del = document.createElement('button');
+      del.className = 'aside-doc-delete';
+      del.textContent = '×';
+      del.setAttribute('aria-label', 'Delete document');
+
+      name.addEventListener('click', () => renderDocumentEditor(doc.id, project, phaseId));
+      del.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!window.confirm(`Delete "${doc.title || 'Untitled'}"? This cannot be undone.`)) return;
+        phaseData.documents = phaseData.documents.filter(d => d.id !== doc.id);
+        saveProjectData(project);
+        entry.remove();
+      });
+
+      entry.appendChild(name);
+      entry.appendChild(del);
+      docsWidget.appendChild(entry);
+    });
+
+    aside.appendChild(docsWidget);
+
+    // ── Assemble ──
+    layout.appendChild(main);
+    layout.appendChild(aside);
+    phaseView.appendChild(layout);
+
+    // ── Event listeners ──
+    notesTA.addEventListener('blur', () => {
+      phaseData.notes = notesTA.value;
+      saveProjectData(project);
+    });
+
+    const prdInput = document.getElementById('prd-url-input');
+    if (prdInput) {
+      prdInput.addEventListener('blur', () => {
+        project.prdUrl = prdInput.value;
+        saveProjectData(project);
+      });
+    }
+
+    const stackInput = document.getElementById('stack-decision-input');
+    if (stackInput) {
+      stackInput.addEventListener('blur', () => {
+        project.stackDecision = stackInput.value;
+        saveProjectData(project);
+      });
+    }
+
+    document.getElementById('warn-banner-dismiss').addEventListener('click', () => {
+      document.getElementById('warn-banner').classList.add('hidden');
+      state.warnDismissed = true;
+    });
+  }
+
+  // ─── Update Phase Progress ────────────────────────────────────────────────────
+
+  // ─── Build Progress Circle (SVG ring) ────────────────────────────────────────
+
+  function buildProgressCircle(done, total, label, arcId, countId) {
+    const r    = 40;
+    const circ = 2 * Math.PI * r;        // 251.33
+    const pct  = total > 0 ? done / total : 0;
+    const ns   = 'http://www.w3.org/2000/svg';
+
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.style.cssText = 'width:100%;height:auto;display:block;';
+
+    // Track ring
+    const track = document.createElementNS(ns, 'circle');
+    track.setAttribute('cx', '50'); track.setAttribute('cy', '50'); track.setAttribute('r', String(r));
+    track.setAttribute('fill', 'none');
+    track.setAttribute('stroke', 'var(--color-border)');
+    track.setAttribute('stroke-width', '7');
+    svg.appendChild(track);
+
+    // Progress arc
+    const arc = document.createElementNS(ns, 'circle');
+    arc.setAttribute('cx', '50'); arc.setAttribute('cy', '50'); arc.setAttribute('r', String(r));
+    arc.setAttribute('fill', 'none');
+    arc.setAttribute('stroke', 'var(--color-accent)');
+    arc.setAttribute('stroke-width', '7');
+    arc.setAttribute('stroke-linecap', 'round');
+    arc.setAttribute('stroke-dasharray', circ.toFixed(2));
+    arc.setAttribute('stroke-dashoffset', (circ * (1 - pct)).toFixed(2));
+    arc.setAttribute('transform', 'rotate(-90 50 50)');
+    arc.style.transition = 'stroke-dashoffset 0.4s ease';
+    arc.id = arcId;
+    svg.appendChild(arc);
+
+    // Count text (e.g. "2/6")
+    const countEl = document.createElementNS(ns, 'text');
+    countEl.setAttribute('x', '50'); countEl.setAttribute('y', '46');
+    countEl.setAttribute('text-anchor', 'middle');
+    countEl.setAttribute('dominant-baseline', 'middle');
+    countEl.setAttribute('fill', 'var(--color-text)');
+    countEl.setAttribute('font-size', '13');
+    countEl.setAttribute('font-weight', '600');
+    countEl.setAttribute('font-family', 'IBM Plex Sans, sans-serif');
+    countEl.id = countId;
+    countEl.textContent = `${done}/${total}`;
+    svg.appendChild(countEl);
+
+    // Label text
+    const labelEl = document.createElementNS(ns, 'text');
+    labelEl.setAttribute('x', '50'); labelEl.setAttribute('y', '62');
+    labelEl.setAttribute('text-anchor', 'middle');
+    labelEl.setAttribute('fill', 'var(--color-text-muted)');
+    labelEl.setAttribute('font-size', '9');
+    labelEl.setAttribute('font-family', 'IBM Plex Sans, sans-serif');
+    labelEl.textContent = label;
+    svg.appendChild(labelEl);
+
+    return svg;
+  }
+
+  // ─── Update Phase Progress ────────────────────────────────────────────────────
+
+  function updatePhaseProgress(project, phaseId) {
+    const phaseData  = project.phases[phaseId];
+    const taskDone   = phaseData.tasks.filter(t => t.done).length;
+    const taskTotal  = phaseData.tasks.length;
+    const checkDone  = phaseData.checklist.filter(c => c.done).length;
+    const checkTotal = phaseData.checklist.length;
+
+    const r    = 40;
+    const circ = 2 * Math.PI * r;
+
+    const tasksArc   = document.getElementById('progress-tasks-arc');
+    const tasksCount = document.getElementById('progress-tasks-count');
+    const checkArc   = document.getElementById('progress-check-arc');
+    const checkCount = document.getElementById('progress-check-count');
+
+    if (tasksArc)   tasksArc.setAttribute('stroke-dashoffset', (circ * (1 - (taskTotal ? taskDone / taskTotal : 0))).toFixed(2));
+    if (tasksCount) tasksCount.textContent = `${taskDone}/${taskTotal}`;
+    if (checkArc)   checkArc.setAttribute('stroke-dashoffset', (circ * (1 - (checkTotal ? checkDone / checkTotal : 0))).toFixed(2));
+    if (checkCount) checkCount.textContent = `${checkDone}/${checkTotal}`;
+  }
+
+  // ─── Build Task Item ──────────────────────────────────────────────────────────
+
+  function buildTaskItem(task, project, phaseId) {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.dataset.taskId = task.id;
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'task-checkbox';
+    checkbox.checked = task.done;
+    checkbox.setAttribute('aria-label', task.text);
+
+    const textInput = document.createElement('textarea');
+    textInput.className = 'task-text' + (task.done ? ' done' : '');
+    textInput.value = task.text;
+    textInput.rows = 1;
+    textInput.readOnly = true;
+    // Auto-resize
+    textInput.style.overflow = 'hidden';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'task-edit';
+    editBtn.textContent = 'Edit';
+    editBtn.setAttribute('aria-label', 'Edit task');
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'task-delete';
+    deleteBtn.textContent = '×';
+    deleteBtn.setAttribute('aria-label', 'Delete task');
+
+    function enterEditMode() {
+      textInput.readOnly = false;
+      textInput.classList.add('editing');
+      editBtn.textContent = 'Done';
+      editBtn.classList.add('active');
+      textInput.focus();
+      textInput.select();
+    }
+
+    function exitEditMode() {
+      textInput.readOnly = true;
+      textInput.classList.remove('editing');
+      editBtn.textContent = 'Edit';
+      editBtn.classList.remove('active');
+      task.text = textInput.value.trim() || task.text;
+      textInput.value = task.text;
+      saveProjectData(project);
+      autoResizeTextarea(textInput);
+    }
+
+    checkbox.addEventListener('change', () => {
+      task.done = checkbox.checked;
+      textInput.className = 'task-text' + (task.done ? ' done' : '') + (textInput.readOnly ? '' : ' editing');
+      saveProjectData(project);
+      updatePhaseProgress(project, phaseId);
+    });
+
+    editBtn.addEventListener('click', () => {
+      if (textInput.readOnly) {
+        enterEditMode();
+      } else {
+        exitEditMode();
+      }
+    });
+
+    textInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        exitEditMode();
+      }
+      if (e.key === 'Escape') {
+        textInput.value = task.text;
+        exitEditMode();
+      }
+    });
+
+    textInput.addEventListener('input', () => {
+      autoResizeTextarea(textInput);
+    });
+
+    deleteBtn.addEventListener('click', () => {
+      const phaseData = project.phases[phaseId];
+      phaseData.tasks = phaseData.tasks.filter(t => t.id !== task.id);
+      saveProjectData(project);
+      li.remove();
+      updatePhaseProgress(project, phaseId);
+    });
+
+    li.appendChild(checkbox);
+    li.appendChild(textInput);
+    li.appendChild(editBtn);
+    li.appendChild(deleteBtn);
+
+    // Initial resize
+    requestAnimationFrame(() => autoResizeTextarea(textInput));
+
+    return li;
+  }
+
+  // ─── Build Checklist Item ──────────────────────────────────────────────────────
+
+  function buildChecklistItem(item, project, phaseId) {
+    const li = document.createElement('li');
+    li.className = 'checklist-item' + (item.done ? ' done-item' : '');
+    li.dataset.checklistId = item.id;
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'task-checkbox';
+    checkbox.checked = item.done;
+    checkbox.setAttribute('aria-label', item.text);
+
+    const text = document.createElement('span');
+    text.className = 'checklist-text';
+    text.textContent = item.text;
+
+    checkbox.addEventListener('change', () => {
+      item.done = checkbox.checked;
+      li.className = 'checklist-item' + (item.done ? ' done-item' : '');
+      saveProjectData(project);
+      updatePhaseProgress(project, phaseId);
+      // Hide warn banner when user completes all items
+      const remaining = project.phases[phaseId].checklist.filter(c => !c.done).length;
+      if (remaining === 0) {
+        const banner = document.getElementById('warn-banner');
+        if (banner) banner.classList.add('hidden');
+      }
+    });
+
+    li.appendChild(checkbox);
+    li.appendChild(text);
+    return li;
+  }
+
+  // ─── Add Custom Task ──────────────────────────────────────────────────────────
+
+  function addCustomTask(project, phaseId) {
+    const phaseData = project.phases[phaseId];
+    const newTask = {
+      id: newTaskId(),
+      text: '',
+      done: false,
+      custom: true,
+    };
+    phaseData.tasks.push(newTask);
+    saveProjectData(project);
+
+    const taskList = document.getElementById('task-list');
+    const item = buildTaskItem(newTask, project, phaseId);
+    taskList.appendChild(item);
+    updatePhaseProgress(project, phaseId);
+
+    // Start new tasks in edit mode
+    const editTrigger = item.querySelector('.task-edit');
+    if (editTrigger) editTrigger.click();
+  }
+
+  // ─── Advance Phase ────────────────────────────────────────────────────────────
+
+  function handleAdvance(project, phaseId, content) {
+    const phaseData = project.phases[phaseId];
+    const incomplete = phaseData.checklist.filter(c => !c.done).length;
+
+    if (incomplete > 0 && !state.warnDismissed) {
+      // Show inline warn banner
+      const banner = document.getElementById('warn-banner');
+      const bannerText = document.getElementById('warn-banner-text');
+      bannerText.textContent = `${incomplete} checklist item${incomplete === 1 ? '' : 's'} not yet complete. You can still advance — just wanted you to know.`;
+      banner.classList.remove('hidden');
+      return;
+    }
+
+    // Mark current phase complete
+    phaseData.status = 'complete';
+    phaseData.completedAt = Date.now();
+
+    if (content.nextPhase === null) {
+      // Mark project complete
+      project.status = 'complete';
+      saveProjectData(project);
+      // Update summary
+      const idx = state.projects.findIndex(p => p.id === project.id);
+      if (idx !== -1) {
+        state.projects[idx].status = 'complete';
+        saveProjects(state.projects);
+      }
+      goHome();
+      return;
+    }
+
+    // Unlock next phase
+    const nextId = content.nextPhase;
+    if (project.phases[nextId]) {
+      project.phases[nextId].status = 'active';
+      project.phases[nextId].unlockedAt = Date.now();
+    }
+    project.currentPhase = nextId;
+    saveProjectData(project);
+
+    // Navigate to next phase
+    state.activePhaseId = nextId;
+    state.warnDismissed = false;
+    renderStepper();
+    renderPhasePanel();
+  }
+
+  // ─── Documents: Build Entry ───────────────────────────────────────────────────
+
+  function buildDocEntry(doc, project, phaseId) {
+    const entry = document.createElement('div');
+    entry.className = 'doc-entry';
+
+    const date = new Date(doc.createdAt).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric'
+    });
+
+    const main = document.createElement('div');
+    main.className = 'doc-entry-main';
+    main.innerHTML = `
+      <div class="doc-entry-title">${escapeHtml(doc.title || 'Untitled')}</div>
+      <div class="doc-entry-meta">Created ${date}</div>
+    `;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'doc-entry-delete';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.setAttribute('aria-label', 'Delete document');
+
+    main.addEventListener('click', () => {
+      renderDocumentEditor(doc.id, project, phaseId);
+    });
+
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const label = doc.title || 'Untitled';
+      if (!window.confirm(`Delete "${label}"? This cannot be undone.`)) return;
+      const phaseData = project.phases[phaseId];
+      phaseData.documents = (phaseData.documents || []).filter(d => d.id !== doc.id);
+      saveProjectData(project);
+      entry.remove();
+    });
+
+    entry.appendChild(main);
+    entry.appendChild(deleteBtn);
+    return entry;
+  }
+
+  // ─── Documents: Editor ───────────────────────────────────────────────────────
+
+  function renderDocumentEditor(docId, project, phaseId) {
+    const phaseView = document.getElementById('view-phase');
+    phaseView.innerHTML = '';
+
+    const phaseData = project.phases[phaseId];
+    const doc = (phaseData.documents || []).find(d => d.id === docId);
+    if (!doc) {
+      renderPhasePanel();
+      return;
+    }
+
+    state.activeDocumentId = docId;
+
+    const phaseLabel = PHASE_LABELS[phaseId] || phaseId;
+    const panel = document.createElement('div');
+
+    // Back link
+    const backBtn = document.createElement('button');
+    backBtn.className = 'doc-editor-back';
+    backBtn.textContent = `← ${phaseLabel}`;
+    backBtn.addEventListener('click', () => {
+      state.activeDocumentId = null;
+      renderPhasePanel();
+    });
+    panel.appendChild(backBtn);
+
+    // Title field
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.className = 'doc-title-input';
+    titleInput.placeholder = 'Document title';
+    titleInput.value = doc.title;
+    panel.appendChild(titleInput);
+
+    // Content textarea
+    const contentTA = document.createElement('textarea');
+    contentTA.className = 'doc-content-textarea';
+    contentTA.placeholder = 'Paste or write your document content here…';
+    contentTA.value = doc.content;
+    panel.appendChild(contentTA);
+
+    // Meta hint
+    const meta = document.createElement('div');
+    meta.className = 'doc-editor-meta';
+    meta.textContent = 'Saves automatically when you click away.';
+    panel.appendChild(meta);
+
+    phaseView.appendChild(panel);
+
+    titleInput.addEventListener('blur', () => {
+      doc.title = titleInput.value.trim() || 'Untitled';
+      saveProjectData(project);
+    });
+
+    contentTA.addEventListener('blur', () => {
+      doc.content = contentTA.value;
+      saveProjectData(project);
+    });
+
+    titleInput.focus();
+  }
+
+  // ─── Documents: Create ───────────────────────────────────────────────────────
+
+  function createDocument(project, phaseId) {
+    const phaseData = project.phases[phaseId];
+    if (!phaseData.documents) phaseData.documents = [];
+    const doc = {
+      id: 'doc_' + Date.now().toString(36),
+      title: '',
+      content: '',
+      createdAt: Date.now(),
+    };
+    phaseData.documents.push(doc);
+    saveProjectData(project);
+    renderDocumentEditor(doc.id, project, phaseId);
+  }
+
+  // ─── Project Settings ────────────────────────────────────────────────────────
+
+  function renderProjectSettings(project) {
+    const phaseView = document.getElementById('view-phase');
+    phaseView.innerHTML = '';
+
+    document.getElementById('sidebar-settings-btn').classList.add('active');
+
+    const panel = document.createElement('div');
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'settings-header';
+    header.innerHTML = `<h2 class="settings-title">Project Settings</h2>`;
+    panel.appendChild(header);
+
+    // ── Name ──
+    const nameField = document.createElement('div');
+    nameField.className = 'settings-field';
+    nameField.innerHTML = `<label class="settings-label" for="settings-name">Project name</label>`;
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.id = 'settings-name';
+    nameInput.className = 'settings-input';
+    nameInput.maxLength = 80;
+    nameInput.value = project.name;
+    nameField.appendChild(nameInput);
+    panel.appendChild(nameField);
+
+    // ── Type ──
+    const typeField = document.createElement('div');
+    typeField.className = 'settings-field';
+    typeField.innerHTML = `<label class="settings-label" for="settings-type">Project type</label>`;
+    const typeSelect = document.createElement('select');
+    typeSelect.id = 'settings-type';
+    typeSelect.className = 'settings-select';
+    Object.entries(TYPE_LABELS).forEach(([val, label]) => {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = label;
+      if (val === project.type) opt.selected = true;
+      typeSelect.appendChild(opt);
+    });
+    typeField.appendChild(typeSelect);
+    panel.appendChild(typeField);
+
+    // ── Description ──
+    const descField = document.createElement('div');
+    descField.className = 'settings-field';
+    descField.innerHTML = `<label class="settings-label" for="settings-desc">Description</label>`;
+    const descTA = document.createElement('textarea');
+    descTA.id = 'settings-desc';
+    descTA.className = 'settings-textarea';
+    descTA.placeholder = 'What are you building and why?';
+    descTA.value = project.description || '';
+    descField.appendChild(descTA);
+    panel.appendChild(descField);
+
+    // ── Status ──
+    const statusSection = document.createElement('div');
+    statusSection.className = 'settings-field';
+    statusSection.innerHTML = `<span class="settings-label">Status</span>`;
+
+    const statusRow = document.createElement('div');
+    statusRow.className = 'settings-status-row';
+
+    const statusLeft = document.createElement('div');
+    const isArchived = project.status === 'archived';
+    const isComplete = project.status === 'complete';
+    statusLeft.innerHTML = `
+      <div class="settings-status-label">${isArchived ? 'Archived' : isComplete ? 'Complete' : 'Active'}</div>
+      <div class="settings-status-value">${isArchived ? 'Hidden from active projects' : isComplete ? 'All phases done' : 'In progress'}</div>
+    `;
+
+    const statusBtn = document.createElement('button');
+    statusBtn.className = 'btn-status';
+    statusBtn.textContent = isArchived ? 'Reopen' : 'Archive';
+    statusBtn.addEventListener('click', () => {
+      project.status = isArchived ? 'active' : 'archived';
+      const idx = state.projects.findIndex(p => p.id === project.id);
+      if (idx !== -1) state.projects[idx].status = project.status;
+      saveProjectData(project);
+      saveProjects(state.projects);
+      renderProjectSettings(project);
+    });
+
+    statusRow.appendChild(statusLeft);
+    statusRow.appendChild(statusBtn);
+    statusSection.appendChild(statusRow);
+    panel.appendChild(statusSection);
+
+    // ── Danger zone ──
+    const danger = document.createElement('div');
+    danger.className = 'settings-danger-zone';
+    danger.innerHTML = `<div class="settings-danger-label">Danger zone</div>`;
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn-danger';
+    deleteBtn.textContent = 'Delete project';
+    deleteBtn.addEventListener('click', () => {
+      if (!window.confirm(`Delete "${project.name}"? This cannot be undone.`)) return;
+      state.projects = state.projects.filter(p => p.id !== project.id);
+      delete state.projectData[project.id];
+      saveProjects(state.projects);
+      try { localStorage.removeItem('bob_project_' + project.id); } catch (e) {}
+      goHome();
+    });
+    danger.appendChild(deleteBtn);
+    panel.appendChild(danger);
+
+    phaseView.appendChild(panel);
+
+    // Save handlers
+    nameInput.addEventListener('blur', () => {
+      const val = nameInput.value.trim();
+      if (!val) { nameInput.value = project.name; return; }
+      project.name = val;
+      const idx = state.projects.findIndex(p => p.id === project.id);
+      if (idx !== -1) state.projects[idx].name = val;
+      saveProjectData(project);
+      saveProjects(state.projects);
+      document.getElementById('sidebar-project-name').textContent = val;
+    });
+
+    typeSelect.addEventListener('change', () => {
+      project.type = typeSelect.value;
+      const idx = state.projects.findIndex(p => p.id === project.id);
+      if (idx !== -1) state.projects[idx].type = typeSelect.value;
+      saveProjectData(project);
+      saveProjects(state.projects);
+      document.getElementById('sidebar-project-type').textContent = TYPE_LABELS[typeSelect.value] || typeSelect.value;
+    });
+
+    descTA.addEventListener('blur', () => {
+      project.description = descTA.value;
+      saveProjectData(project);
+    });
+  }
+
+  // ─── Navigation ──────────────────────────────────────────────────────────────
+
+  function openProject(projectId) {
+    let data = state.projectData[projectId];
+    if (!data) {
+      data = loadProjectData(projectId);
+      if (!data) return;
+      state.projectData[projectId] = data;
+    }
+
+    state.activeProjectId = projectId;
+    state.activePhaseId = data.currentPhase || '0';
+    state.activeDocumentId = null;
+    state.warnDismissed = false;
+    document.getElementById('sidebar-settings-btn').classList.remove('active');
+
+    document.getElementById('app').classList.remove('app--home');
+
+    // Update sidebar
+    document.getElementById('sidebar-home').classList.add('hidden');
+    document.getElementById('sidebar-project').classList.remove('hidden');
+    document.getElementById('sidebar-project-name').textContent = data.name;
+    document.getElementById('sidebar-project-type').textContent = TYPE_LABELS[data.type] || data.type;
+
+    // Show phase view
+    document.getElementById('view-home').classList.add('hidden');
+    document.getElementById('view-phase').classList.remove('hidden');
+
+    renderStepper();
+    renderPhasePanel();
+  }
+
+  function navigateToPhase(phaseId) {
+    if (!state.activeProjectId) return;
+    state.activePhaseId = phaseId;
+    state.activeDocumentId = null;
+    state.warnDismissed = false;
+    document.getElementById('sidebar-settings-btn').classList.remove('active');
+    renderStepper();
+    renderPhasePanel();
+  }
+
+  function goHome() {
+    state.activeProjectId = null;
+    state.activePhaseId = null;
+    state.warnDismissed = false;
+
+    document.getElementById('app').classList.add('app--home');
+
+    document.getElementById('sidebar-home').classList.remove('hidden');
+    document.getElementById('sidebar-project').classList.add('hidden');
+
+    document.getElementById('view-home').classList.remove('hidden');
+    document.getElementById('view-phase').classList.add('hidden');
+
+    renderProjectList();
+  }
+
+  function getCurrentProject() {
+    if (!state.activeProjectId) return null;
+    return state.projectData[state.activeProjectId] || null;
+  }
+
+  // ─── Create Project ───────────────────────────────────────────────────────────
+
+  function createProject(name, type) {
+    if (state.projects.length >= 5) return;
+    if (!name.trim() || !type) return;
+
+    const id = newProjectId();
+    const data = buildNewProjectData(id, name.trim(), type);
+
+    const summary = {
+      id,
+      name: name.trim(),
+      type,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      currentPhase: '0',
+      status: 'active',
+    };
+
+    state.projects.push(summary);
+    state.projectData[id] = data;
+
+    saveProjects(state.projects);
+    saveProjectData(data);
+
+    openProject(id);
+  }
+
+  // ─── Delete Project ───────────────────────────────────────────────────────────
+
+  function confirmDeleteProject(projectId, projectName) {
+    const confirmed = window.confirm(`Delete "${projectName}"? This cannot be undone.`);
+    if (!confirmed) return;
+
+    state.projects = state.projects.filter(p => p.id !== projectId);
+    delete state.projectData[projectId];
+
+    saveProjects(state.projects);
+    try {
+      localStorage.removeItem('bob_project_' + projectId);
+    } catch (e) {
+      console.error('bob: failed to remove project data', e);
+    }
+
+    renderProjectList();
+  }
+
+  // ─── Utility ──────────────────────────────────────────────────────────────────
+
+  function escapeHtml(str) {
+    if (typeof str !== 'string') return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function autoResizeTextarea(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  }
+
+  // ─── Init ─────────────────────────────────────────────────────────────────────
+
+  function init() {
+    // Load animation control
+    const app = document.getElementById('app');
+    app.classList.add('app--home');
+    if (sessionStorage.getItem('bob_loaded')) {
+      app.classList.add('no-animation');
+    } else {
+      sessionStorage.setItem('bob_loaded', '1');
+    }
+
+    // Load projects from localStorage
+    state.projects = loadProjects();
+
+    // Render home
+    renderProjectList();
+
+    // cancel new project
+    document.getElementById('cancel-new-project-btn').addEventListener('click', () => {
+      document.getElementById('new-project-form').classList.add('hidden');
+      document.getElementById('project-name-input').value = '';
+      document.getElementById('project-type-select').value = '';
+      renderProjectList(); // re-show new project btn or max note
+    });
+
+    document.getElementById('create-project-btn').addEventListener('click', () => {
+      const name = document.getElementById('project-name-input').value;
+      const type = document.getElementById('project-type-select').value;
+
+      if (!name.trim()) {
+        document.getElementById('project-name-input').focus();
+        return;
+      }
+      if (!type) {
+        document.getElementById('project-type-select').focus();
+        return;
+      }
+
+      // Reset form
+      document.getElementById('new-project-form').classList.add('hidden');
+      document.getElementById('project-name-input').value = '';
+      document.getElementById('project-type-select').value = '';
+
+      createProject(name, type);
+    });
+
+    // Allow Enter key in project name input to submit
+    document.getElementById('project-name-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('create-project-btn').click();
+      }
+    });
+
+    // Back to home
+    document.getElementById('back-to-home').addEventListener('click', () => {
+      goHome();
+    });
+
+    // Project settings
+    document.getElementById('sidebar-settings-btn').addEventListener('click', () => {
+      const project = getCurrentProject();
+      if (!project) return;
+      const btn = document.getElementById('sidebar-settings-btn');
+      if (btn.classList.contains('active')) {
+        // Toggle off — return to current phase
+        btn.classList.remove('active');
+        renderPhasePanel();
+      } else {
+        renderProjectSettings(project);
+      }
+    });
+
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>

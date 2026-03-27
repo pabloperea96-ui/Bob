@@ -368,7 +368,19 @@ Bob should feel like a tool made by a designer, not a developer.
 
 **Dark mode**: Supported via `prefers-color-scheme`. Should feel equally intentional in both modes.
 
-**Typography**: Two fonts maximum. One for headings (distinctive, characterful). One for body (readable, neutral). Load via Google Fonts. Avoid Inter, Roboto, Arial, Space Grotesk.
+**Accent color**: `#F0C70E` (bright yellow). Use sparingly — interactive states, active phase indicator, and key CTAs only. No other accent color.
+
+**Typography**: IBM Plex Sans only, loaded from Google Fonts. No secondary font. Hierarchy through weight and size alone.
+
+| Use | Weight | Size |
+|-----|--------|------|
+| UI labels / metadata | 400 | 12px |
+| Body / task text | 400 | 14px |
+| Section headers | 500 | 14px |
+| Phase titles | 600 | 18px |
+| App header / project name | 700 | 24px+ |
+
+**Load animation**: On initial open, all UI elements fade in together (`opacity: 0 → 1`). CSS only. Duration: 250ms. Easing: `ease-out`. No movement, no slide, no stagger. A `sessionStorage` flag prevents replay on subsequent renders within the same session.
 
 **What Bob should NOT look like**: A Jira clone. A generic to-do app. A startup dashboard with purple gradients. Anything that feels like a template.
 
