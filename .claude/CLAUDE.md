@@ -36,3 +36,40 @@ See docs/CONTEXT.md §7 for the exact data model. Follow it exactly.
 
 ## Open Decisions to Resolve in First Session
 See docs/CONTEXT.md §8 — four UI decisions need to be made before building starts.
+
+## Visual Implementation Guidance
+
+### Aesthetic Direction
+Commit fully to: editorial / luxury-refined / field guide.
+Not minimal for minimalism's sake — considered and intentional.
+The one thing someone should remember: it feels like a tool made by a designer who cares.
+
+### Typography
+- Heading font: distinctive, characterful — something with personality (ex: Fraunces, Playfair Display, Cormorant, DM Serif Display)
+- Body font: readable, neutral but not generic (ex: Lora, Source Serif, Instrument Serif)
+- Weight and size carry hierarchy — not color, not badges
+- Never: Inter, Roboto, Arial, Space Grotesk, system fonts
+
+### Color
+- Monochrome base (near-black / near-white)
+- One accent color — warm or cool, used sparingly
+- CSS variables for every color value — no hardcoded hex in components
+- Dark mode via prefers-color-scheme — equally intentional, not just inverted
+
+### Motion
+- Phase transitions: subtle, like turning a page — not a button click
+- One well-orchestrated load sequence with staggered reveals
+- Hover states that feel considered, not default
+- CSS-only animations — no JS animation libraries
+
+### Spatial Composition
+- Generous whitespace — let content breathe
+- Strong vertical rhythm
+- Avoid symmetrical card grids — this is not a dashboard
+- Phase status through typography and subtle indicators, never colored badges
+
+### What Bob Must Never Look Like
+- A Jira clone
+- A generic to-do app
+- A startup dashboard with purple gradients
+- Anything that looks like it came from a UI kit
