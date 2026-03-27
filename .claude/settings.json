@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(rm -rf:*)"
+    ]
+  }
+}
