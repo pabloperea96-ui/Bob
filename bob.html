@@ -20,6 +20,8 @@
       --color-warn-bg:      #FFFAE8;
       --color-warn-border:  #E8B800;
       --color-sidebar-bg:   #F0EEE9;
+      --color-danger:       #C0392B;
+      --color-hub-bg:       #111110;
       --sidebar-width:      240px;
       --content-max:        680px;
       --radius:             4px;
@@ -381,8 +383,8 @@
     }
 
     .btn-danger:hover {
-      color: #c0392b;
-      border-color: #c0392b;
+      color: var(--color-danger);
+      border-color: var(--color-danger);
     }
 
     /* ─── Phase Stepper ─────────────────────────────────────────────────────── */
@@ -454,28 +456,29 @@
     }
 
     .app--home {
-      background: #111110;
+      background: var(--color-hub-bg);
     }
 
     .app--home .main {
       max-width: 900px;
       margin: 0 auto;
       padding: 40px 56px 80px;
-      background: #111110;
+      background: var(--color-hub-bg);
     }
 
     /* ─── Home Hub ───────────────────────────────────────────────────────────── */
     #view-home {
-      --hub-text:        #e8e4dc;
-      --hub-muted:       #666660;
-      --hub-muted-light: #999990;
-      --hub-accent:      #e8c84a;
-      --hub-accent-bg:   rgba(232, 200, 74, 0.06);
-      --hub-border-card: #2a2a28;
-      --hub-border-row:  #1e1e1c;
-      --hub-pip-done:    #3a3830;
-      --hub-pip-future:  #222220;
-      --hub-stale:       #e8923a;
+      --hub-text:         #e8e4dc;
+      --hub-muted:        #666660;
+      --hub-muted-light:  #999990;
+      --hub-accent:       var(--color-accent);
+      --hub-accent-bg:    rgba(240, 199, 14, 0.06);
+      --hub-border-card:  #2a2a28;
+      --hub-border-row:   #1e1e1c;
+      --hub-pip-done:     #3a3830;
+      --hub-pip-future:   #222220;
+      --hub-stale:        #e8923a;
+      --hub-form-surface: #1a1a18;
       color: var(--hub-text);
       font-family: 'IBM Plex Sans', sans-serif;
     }
@@ -795,7 +798,7 @@
       font-family: 'IBM Plex Sans', sans-serif;
       font-size: 12px;
       font-weight: 500;
-      color: #111110;
+      color: var(--color-hub-bg);
       background: var(--hub-accent);
       border: none;
       border-radius: 4px;
@@ -831,25 +834,25 @@
 
     /* Force form to use dark palette on home screen */
     #view-home .new-project-form {
-      background-color: #1a1a18;
-      border-color: #2a2a28;
+      background-color: var(--hub-form-surface);
+      border-color: var(--hub-border-card);
       margin-top: 0;
     }
 
     #view-home .form-input,
     #view-home .form-select {
-      background-color: #111110;
-      border-color: #2a2a28;
-      color: #e8e4dc;
+      background-color: var(--color-hub-bg);
+      border-color: var(--hub-border-card);
+      color: var(--hub-text);
     }
 
     #view-home .form-input:focus,
     #view-home .form-select:focus {
-      border-color: #e8c84a;
+      border-color: var(--hub-accent);
     }
 
     #view-home .form-label {
-      color: #666660;
+      color: var(--hub-muted);
     }
 
     /* ─── Project List (used elsewhere) ──────────────────────────────────────── */
@@ -1276,6 +1279,11 @@
     /* ─── Phase Sections ─────────────────────────────────────────────────────── */
     .phase-section {
       margin-bottom: 40px;
+    }
+
+    .phase-error-msg {
+      color: var(--color-text-muted);
+      font-size: 13px;
     }
 
     .phase-section-header {
@@ -2638,7 +2646,7 @@
       btn.innerHTML = '+ &nbsp;New project';
       btn.addEventListener('click', () => {
         document.getElementById('new-project-form').classList.remove('hidden');
-        btn.style.display = 'none';
+        btn.classList.add('hidden');
         document.getElementById('project-name-input').focus();
       });
       ctaRow.appendChild(btn);
@@ -2706,7 +2714,7 @@
     const phaseData = project.phases[phaseId];
 
     if (!content || !phaseData) {
-      phaseView.innerHTML = '<p style="color:var(--color-text-muted);font-size:13px;">Phase data not available.</p>';
+      phaseView.innerHTML = '<p class="phase-error-msg">Phase data not available.</p>';
       return;
     }
 
